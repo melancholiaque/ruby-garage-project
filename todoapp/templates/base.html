@@ -1,0 +1,15 @@
+<html>
+  
+  <head>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>NO TITLE PROVIDED</title>
+    {% endif %}
+  </head>
+  
+  <body>
+    {% block content %}{% endblock %}
+  </body>
+  
+</html>
