@@ -6,7 +6,7 @@ import click
 @click.group()
 def CLI():
     """
-    CLI utilities collection for various tasks
+    CLI utilities collection for various tasks associated with project
     """
     pass
 
@@ -25,9 +25,10 @@ def tables_init():
     """
     database table initialization
     """
-    from todoapp.data import Project,Task
+    from todoapp.data import Project,Task,User
     
-    for table,table_name in [(Project,'project'),
+    for table,table_name in [(User,'user'),
+                             (Project,'project'),
                              (Task,'task')]:
         try:
             table.create_table()
@@ -46,8 +47,8 @@ def tables_drop():
     """
     database table deletion
     """
-    from todoapp.data import database,Project,Task
-    database.drop_tables((Project,Task))
+    from todoapp.data import db, Project, Task, User
+    db.drop_tables( (Project, Task, User) )
     print('data tables dropped successfully')
 
 if __name__ == '__main__':
