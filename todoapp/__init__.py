@@ -9,3 +9,4 @@ db = PostgresqlDatabase("todo-app-database")
 lm = LoginManager()
 lm.init_app(app)
 from todoapp import routes
+
