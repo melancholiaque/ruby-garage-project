@@ -4,6 +4,7 @@ from todoapp.data import Task, Project, User
 from flask import render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from re import compile as compile_re
+from datetime import datetime
 
 email_regex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 
@@ -65,12 +66,11 @@ def sign_out():
 def get_task(task):
         return dict(name = task.name,
                     status = task.status,
-                    prio = task.priority,
-                    dead = task.deadline)
+                    deadline = task.deadline and task.deadline.strftime("%d/%m/%y %H:%M"))
 
 def get_project(proj, with_tasks = True):
         if with_tasks:
-                query = Task.select().where(Task.project == proj).order_by(Task.priority)
+                query = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
         else:
                 query = []
         return dict(name = proj.name,
@@ -81,14 +81,12 @@ def get_project(proj, with_tasks = True):
 @login_required
 def create_project():
         user = current_user.self
-        fields = 'name', 'description'
-        fields = name, description = [request.args.get(i) for i in fields]
+        name = request.args.get('name')
         if not name:
                 return dumps(dict(status = 'fail'))
         if Project.get_or_none(name = name, owner = user):
                 return dumps(dict(status = 'exists'))
         proj = Project.create(name = name,
-                              description = description,
                               owner = user)
         return dumps(dict(status='success',
                           project = get_project(proj, with_tasks = False)))
@@ -113,7 +111,7 @@ def change_desc():
         user = current_user.self
         fields = 'proj_name','desc'
         name, desc = [request.args.get(i) for i in fields]
-        
+
         if not name: return 'fail'
 
         proj = Project.get_or_none(Project.owner == user and Project.name == name)
@@ -153,8 +151,18 @@ def add_task():
         proj = Project.get_or_none(name = proj_name, owner = user)
         if not proj:
                 return dumps(dict(status = 'fail'))
-        task = Task.create(name = task_name,
-                           project = proj)
+        
+        highest = Task.get_or_none(Task.upper == -1)
+        if highest:
+                task = Task.create(name = task_name,
+                                   project = proj,
+                                   lower = highest)
+                highest.upper = task.id
+                highest.save()
+        else:
+                task = Task.create(name = task_name,
+                                   project = proj)
+                                            
         return dumps(dict(status = 'success',task = get_task(task)))
 
 @app.route('/remove_task', methods=['POST'])
@@ -163,15 +171,158 @@ def remove_task():
         user = current_user.self
         fields = 'proj_name', 'task_name'
         fields = proj_name, task_name = [request.args.get(i) for i in fields]
+        
         if not all(fields):
                 return 'fail'
+        
         proj = Project.get_or_none(Project.owner == user and Project.name == proj_name)
         if not proj:
                 return 'fail'
+        
         task = Task.get_or_none(Task.project == proj and Task.name == task_name)
-        if not task or not task.delete_instance():
+        if not task:
                 return 'fail'
-        return 'success'
+        
+        prev_task = Task.get_or_none(Task.project == proj and Task.upper == task.id)
+        next_task = Task.get_or_none(Task.project == proj and Task.lower == task.id)
+        print(prev_task, next_task)
+
+        #only task in the list
+        if not (prev_task or next_task):
+                return 'success' if task.delete_instance() else 'fail'
+        
+        #upper task in the list
+        elif not next_task:
+                prev_task.upper = -1
+                return ('success' if (prev_task.save() and task.delete_instance())
+                        else 'fail')
+                
+        #lower task in the list
+        elif not prev_task:
+                next_task.lower = -1
+                return ('success' if (next_task.save() and task.delete_instance())
+                        else 'fail')
+
+        #somewhere in the middle of the list
+        else:
+                prev_task.upper, next_task.lower = next_task.id, prev_task.id
+                return ('success' if (next_task.save() and prev_task.save()
+                                     and task.delete_instance())
+                        else 'fail')
+
+@app.route('/change_task_name', methods=['POST'])
+@login_required
+def change_task_name():
+        user = current_user.self
+        fields = 'proj_name', 'task_name', 'new_name'
+        fields = proj_name, task_name, new_name = [request.args.get(i) for i in fields]
+
+        if not all(fields):
+                return 'fail'
+
+        proj = Project.get_or_none(Project.owner == user and Project.name == proj_name)
+
+        if not proj:
+                return 'fail'
+
+        task = Task.get_or_none(Task.project == proj and Task.name == task_name)
+
+        if not task:
+                return 'fail'
+        
+        if Task.get_or_none(Task.project == proj and Task.name == new_name):
+                return 'exists'
+        
+        task.name = new_name
+        
+        return 'success' if task.save() else 'fail'
+                                                           
+
+@app.route('/change_task_prio', methods=['POST'])
+@login_required
+def change_task_prio():
+        user = current_user.self
+        fields = 'proj_name', 'task_name', 'dir'
+        fields = proj_name, task_name, dir_ = [request.args.get(i) for i in fields]
+        
+        if not all(fields) or not dir_ in ('1','-1'):
+                return dumps(dict(status = 'fail'))
+
+        proj = Project.get_or_none(Project.owner == user and Project.name == proj_name)
+        
+        if not proj:
+                return dumps(dict(status = 'fail'))
+
+        task = Task.get_or_none(Task.project == proj and Task.name == task_name)
+
+        if not task or (task.lower == -1 and dir_ == '-1') or (task.upper == -1 and dir_ == '1'):
+                return dumps(dict(status = 'fail'))
+
+        accessor = task.upper if dir_=='1' else task.lower
+        swap = Task.get_or_none(Task.project == proj and Task.id == accessor)
+
+        if not swap:
+                return dumps(dict(status = 'fail'))
+
+        swap.name, task.name = task.name, swap.name
+        swap.status, task.status = task.status, swap.status
+        swap.deadline, task.deadline = task.deadline, swap.deadline
+        swap.save()
+        task.save()
+        
+        query = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
+        return dumps(dict(status = 'success',
+                          tasks = [get_task(i) for i in query]))
+        
+                                                                 
+
+@app.route('/set_deadline', methods=['POST'])
+@login_required
+def set_deadline():
+        user = current_user.self
+        fields = 'proj_name', 'task_name', 'dead'
+        fields = proj_name, task_name, dead = [request.args.get(i) for i in fields]
+
+        print(dead)
+        
+        if not (proj_name and task_name):
+                return dumps(dict(status = 'fail'))
+
+        proj = Project.get_or_none(Project.owner == user and Project.name == proj_name)
+        if not proj:
+                return dumps(dict(status = 'fail'))
+
+        task = Task.get_or_none(Task.project == proj and Task.name == task_name)
+        if not task:
+                return dumps(dict(status = 'fail'))
+
+        task.deadline = datetime.strptime(dead,'%Y-%m-%dT%H:%M') if dead else None
+        task.save()
+        
+        return dumps(dict(status = 'success', time = task.deadline.strftime("%d/%m/%y %H:%M")))
+
+@app.route('/change_task_status', methods=['POST'])
+@login_required
+def change_status():
+        user = current_user.self
+        fields = 'proj_name', 'task_name'
+        fields = proj_name, task_name = [request.args.get(i) for i in fields]
+
+        if not all(fields):
+                return 'fail'
+
+        proj = Project.get_or_none(Project.owner == user and Project.name == proj_name)
+        if not proj:
+                return 'fail'
+
+        task = Task.get_or_none(Task.project == proj and Task.name == task_name)
+        if not task:
+                return 'fail'
+
+        task.status = not task.status
+        
+        return 'success' if task.save() else 'fail'
+                                
 
 @app.route('/get_user_data', methods=['GET'])
 @login_required

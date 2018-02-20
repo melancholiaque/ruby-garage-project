@@ -42,7 +42,7 @@ class Project(BaseModel):
     name = CharField(null=False)
     description = CharField(null=True)
     owner = ForeignKeyField(User)
-
+    
 class Task(BaseModel):
     """
     ORM for tasks
@@ -50,6 +50,15 @@ class Task(BaseModel):
     #id created internally
     name = CharField(null=False)
     status = BooleanField(default=False)
-    priority = IntegerField(default=-1) #in order to sort implicitly
+    lower = IntegerField(default=-1)
+    upper = IntegerField(default=-1)
     deadline = DateTimeField(null=True)
     project = ForeignKeyField(Project)
+
+    class Meta():
+        database = db
+        indexes = (
+            #unique order per project
+            (('project', 'prev_id', 'next_id'), True),
+        )
+

@@ -8,92 +8,169 @@
     <title>NO TITLE PROVIDED</title>
     {% endif %}
     <style>
-      
+
+
     .hidden {
 	display: none;
     }
 
-    .main_button {
-    color:green;
-    margin-left:30%;
-    margin-right:40%;
-    margin-bottom:20px;
-    margin-top:20px;
-    width:30%;
-    height:30px;
-    background-color: #4CAF50;
-    color: white;
+    div {
+    overflow:auto;
+    border-style: solid;
+    padding: 5px;
+    margin:2px;
+    text-align:center;
+    }
+
+    .sign_up_txt, .sign_in_txt {
+    padding: 4% 5%;
+    margin: 3% auto;
+    }
+
+    button {
+    cursor: pointer;
+    background-color: #358c50;
+    }
+
+    .logon_button {
+    color:white;
     border: none;
     cursor: pointer;
+    width: 15%;
+    height:30px;
+    }
+
+    .cancel {
+    background-color:#ad3f30;
+    }
+
+    .logon_button:hover {
+    opacity: 0.8;
+    }
+    
+    .main_button {
+    margin:auto;
+    width:30%;
+    height:30px;
+    border: solid;
     }
     
     #project_box {
-    margin-left:20%;
-    margin-right:20%;
+    margin-left:auto;
+    margin-right:auto;
     width:50%;
-    text-align: center;
     }
 
     .project_node {
-    padding: 15px;
-    margin-top: 40px;
-    margin-bottom: 40px;
-    border-style: solid;
     }
 
     .project_head {
-    padding:5px;
-    margin:5px;
     border-style: solid;
-    text-align: left;
+    text-align: center;
     }
 
     .project_title {
-    padding:5px;
-    margin:5px;
-    border-style: solid;
+    
+    }
+
+    .task_deadline{
+    width:auto1;
+    display:inline-block;
+    margin: 6px 0%;
+    padding:0% 0%;
     }
 
     .project_desc {
-    padding:0px;
-    margin: 5px;
-    border-style: solid;
     }
 
     .project_control {
-    padding: 0px;
-    margin: 5px;
-    border-style: solid;
-    text-align: right;
     }
 
-    .task_box {
-    padding: 5px;
-    margin: 5px;
-    border-style: solid;
+    .task_box {	
     }
 
     .task_node {
-    padding: 5px;
-    margin: 5px;
-    border-style: solid;
     }
 
-    .task_title {
-    padding: 5px;
-    margin: 5px;
-    border-style: solid;
-    text-align: left;
+    .unfinished_task_title {
+    text-decoration: none;
+    width:auto%;
+    }
+
+    .finished_task_title {
+    text-decoration: line-through;
+    width:auto%;
     }
 
     .task_control {
-    padding: 0px;
-    margin: 5px;
-    border-style: solid;
-    text-align:right;
+    width:20%;
+    display:inline-block;
     }
 
+    .popup_datetime {
+    position: fixed;
+    bottom: 40%;
+    right: 35%;
+    width: 40%;
+    height: 18%;
+    background-color: white;
+    line-height: 500%;
+    display:none;
+    }
 
+    .popup_input {
+    display:none;
+    position:fixed;
+    width: 40%;
+    margin:5% 28%;
+    background-color: white;
+    }
+
+    .popup_input_title {
+    
+    }
+
+    .sign_in, .sign_up {
+    border: 1px solid #888;
+    background:white;
+    margin:auto;
+    margin-top:5%;
+    padding:5% 0%;
+    heigth:100%;
+    width:40%;
+    }
+
+    form {
+	margin:auto;	
+    }
+
+    .animate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+    }
+
+    @-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)}
+    to {-webkit-transform: scale(1)}
+    }
+
+    @keyframes animatezoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+    }
+
+    .anonymous_content, .authenticated_content {
+    position: fixed;
+    margin: 0%;
+    padding:0%;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding-top: 2%;
+    }
+    
     </style>
   </head>
   
@@ -210,10 +287,9 @@
 	xhr.send();
     };
 
-    function create_project() {
-	var proj_name = prompt("input project name","");
-	var proj_desc = prompt("inputs short description","");
-	var params = "?name=" + proj_name + "&description="+proj_desc;
+    function create_project(proj_name) {
+	if(proj_name=="" || proj_name==null) return;
+	var params = "?name=" + proj_name;
 	var xhr = new XMLHttpRequest();
 	xhr.onload = (function() {
 	    var result = JSON.parse(xhr.responseText);
@@ -247,18 +323,43 @@
     function show_signin() {
         document.getElementById("signup").style.display = "none";
 	document.getElementById("signin").style.display = "block";
+	document.getElementById("anonymous_content").style['background-color'] = "#aaaaaa";
+    };
+
+    function hide_signin() {
+	document.getElementById("signin").style.display = "none";
+	document.getElementById("anonymous_content").style['background-color'] = "#ffffff";
     };
 
     function show_signup() {
 	document.getElementById("signin").style.display = "none";
 	document.getElementById("signup").style.display = "block";
+	document.getElementById("anonymous_content").style['background-color'] = "#aaaaaa";
+    };
+
+    function hide_signup() {
+	document.getElementById("signup").style.display = "none";
+	document.getElementById("anonymous_content").style['background-color'] = "#ffffff";
     };
 
     function show_for_authenticated() {
 	document.getElementById("authenticated_content").style.display = "block";
 	document.getElementById("anonymous_content").style.display = "none";
     };
-
+    function show_popup_datetime() {
+	document.getElementById("popup_datetime").style.display = "block";
+    };
+    function hide_popup_datetime() {
+	document.getElementById("popup_datetime").style.display = "none";
+    };
+    function show_popup_input() {
+	document.getElementById("popup_input").style.display = "block";
+	document.getElementById("authenticated_content").style['background-color'] = "#aaaaaa";
+    };
+    function hide_popup_input() {
+	document.getElementById("popup_input").style.display = "none";
+	document.getElementById("authenticated_content").style['background-color'] = "#ffffff";	
+    };
     function show_for_anonymous() {
 	document.getElementById("anonymous_content").style.display = "block";
 	document.getElementById("authenticated_content").style.display = "none";
@@ -273,15 +374,13 @@
 
     function erase_user_data() {
 	var project_box = document.getElementById("project_box");
-	while(project_box.firstChild) {
-	    project_box.removeChild(project_box.firstChild);
-	}
+	erase_box(project_box);
     };
 
     function task_adder(proj_name, task_box_node) {
-	return (function () {
+	return (function (task_name) {
 	    var xhr = new XMLHttpRequest();
-	    var task_name = prompt("enter task name","");
+	    if(task_name=="" || task_name == null) return;
 	    var params = "?proj_name="+proj_name+"&task_name="+task_name;
 
 	    xhr.onload = (function() {
@@ -327,11 +426,9 @@
 	});
     };
 
+
     function project_remover(proj_name, proj_node) {
-	return (function() {
-	    var confirmation = prompt("are you sure want to delete project "
-				      + "\""+proj_name+"\" "
-				      + "\n[Y]es to confirm");
+	return (function(confirmation) {
 	    if (confirmation.toLowerCase() != "yes" && confirmation.toLowerCase() != "y") {
 		return;
 	    }
@@ -350,25 +447,26 @@
 		default:
 		    alert("unknown server error");
 		}
-	    })
+	    });
 	    
 	    xhr.open("POST","remove_project"+params, false);
 	    xhr.send();
 	});
     };
 
-    function desc_changer(proj_name, desc_node) {
-	return (function() {
-	    var new_desc = prompt("input new description",desc_node.innerHTML);
+    function desc_changer(proj_name, desc_node, button) {
+	return (function(new_desc) {
+	    if(new_desc == null) return;
 	    var xhr = new XMLHttpRequest();
 	    var params = "?proj_name="+proj_name+"&desc="+new_desc;
-	    
+
 	    xhr.onload = (function() {
 		var result = xhr.responseText;
 		
 		switch(result) {
 		case "success":
 		    desc_node.innerHTML = new_desc;
+		    button.onclick = wrapped_input_dialog('desc',desc_changer(proj_name, desc_node, button));
 		    break;
 		case "fail":
 		    break;
@@ -383,18 +481,17 @@
     };
 
     function push_task(dir, task, task_box_node, proj_name){
-	var task_node = create_task_node(task, proj_name);
+	var task_node = create_task_node(task, proj_name, task_box_node);
 	if (dir=="head")
 	    task_box_node.insertBefore(task_node, task_box_node.firstChild);
 	else
 	    task_box_node.appendChild(task_node);
     };
 
-    function proj_name_changer(proj_name, proj_title_node) {
-	return (function() {
-	    var new_name = prompt("input new project name",proj_title_node.innerHTML);
-	    if(new_name == "") return;
-	    var params = "?curr_name="+proj_name+"&new_name="+new_name;
+    function proj_name_changer(project, proj_node) {
+	return (function(new_name) {
+	    if(new_name == "" || new_name == null) return;
+	    var params = "?curr_name="+project.name+"&new_name="+new_name;
 	    
 	    var xhr = new XMLHttpRequest();
 	    
@@ -402,7 +499,9 @@
 		var result = xhr.responseText;
 		switch(result){
 		case "success":
-		    proj_title_node.innerHTML = new_name;
+		    project.name = new_name;
+		    var a = create_project_node(project);
+		    proj_node.parentNode.replaceChild(a.node_itself, proj_node);
 		    break;
 		case "exists":
 		    alert("project with such name already exists");
@@ -410,6 +509,7 @@
 		case "fail":
 		    break;
 		default:
+		    alert(result);
 		    alert("unknown server error");
 		}
 	    });
@@ -419,25 +519,218 @@
 	});
     };
 
-    function create_task_node(task, proj_name) {
+    function erase_box(box) {
+	while(box.firstChild) {
+	    box.removeChild(box.firstChild);
+	}
+    };
+
+    function change_task_deadline(task_name, proj_name, deadline_box) {
+	return (function () {
+	    var btn = document.getElementById("datetime_submit");
+	    var inp = document.getElementById("datetime");
+	
+	    btn.onclick = (function () {
+		var dead = inp.value;
+		inp.value = null;
+		window.onclick = null;
+		hide_popup_datetime();
+
+		var xhr = new XMLHttpRequest();
+		var params = "?proj_name="+proj_name+"&task_name="+task_name+"&dead="+dead;
+
+		xhr.onload = (function() {
+		    var result = JSON.parse(xhr.responseText);
+		    switch(result.status) {
+		    case "success":
+			deadline_box.innerHTML = result.time || "";
+			break;
+		    case "fail":
+			break;
+		    default:
+			alert("unknown server error");
+		    }
+		});
+	    
+		xhr.open('POST','set_deadline'+params,false);
+		xhr.send();
+	    });
+	
+	    show_popup_datetime();
+	    
+	    window.onclick = (function (evt){
+		if (!evt.target.matches(".task_control")
+		    && !evt.target.matches(".popup_datetime")
+		    && !evt.target.matches(".datetime_input")
+		    && !evt.target.matches(".datetime_submit")) {
+		    inp.value = null;
+		    window.onclick = null;
+		    hide_popup_datetime(); 
+		}
+	    });
+	    
+	});
+    };
+
+    function input_dialog(title_text,handler) {
+	var text_node = document.getElementById("popup_text");
+	var title_node = document.getElementById("popup_input_title");
+	var submit = document.getElementById("popup_input_submit");
+	var cancel = document.getElementById("popup_input_cancel");
+	title_node.innerHTML = title_text || "";
+	text_node.value = "";
+	submit.onclick = (function() {
+	    window.onmousedown = null;
+	    submit.onclick = null;
+	    cancel.onclick = null;
+	    hide_popup_input();
+	    handler(text_node.value);
+	});
+	cancel.onclick = (function() {
+            window.onmousedown = null;
+	    submit.onclick = null;
+	    cancel.onclick = null;
+	    hide_popup_input();
+	});
+	show_popup_input();
+	window.onmousedown = (function(evt){
+	    if(!evt.target.matches('.popup_input')
+	       && !evt.target.matches('.popup_input_text')
+	       && !evt.target.matches('.popup_input_submit')
+	       && !evt.target.matches('.popup_input_title')) {
+		window.onmousedown = null;
+		submit.onclick = null;
+		cancel.onclick = null;
+		hide_popup_input();
+	    }
+	});
+    };
+
+    function wrapped_input_dialog(title_text,handler){
+	return (function() {
+	    input_dialog(title_text,handler);
+	});
+    };
+
+    function change_task_prio(dir, task_name, proj_name, task_box_node){
+	return (function() {
+	    var xhr = new XMLHttpRequest();
+	    var params = "?proj_name="+proj_name+"&task_name="+task_name+"&dir="+dir;
+
+	    xhr.onload = (function() {
+		var result = JSON.parse(xhr.responseText);
+		switch(result.status){
+		case "success":
+		    erase_box(task_box_node);
+		    for(i in result.tasks) {
+			push_task("tail", result.tasks[i], task_box_node, proj_name);
+		    }
+		    break;
+		case "fail":
+		    break;
+		default:
+		    alert("unknown server error");
+		}
+	    });
+	    
+	    xhr.open("POST","change_task_prio"+params,false);
+	    xhr.send();
+	});
+    };
+
+    function change_status(task_name, proj_name, task_title) {
+	return (function () {
+ 	    var xhr = new XMLHttpRequest();
+	    var params = "?proj_name="+proj_name+"&task_name="+task_name;
+    
+	    xhr.onload = (function() {
+		switch(xhr.responseText){
+		case "success":
+		    task_title.className = (task_title.className == "finished_task_title")
+			&& "unfinished_task_title"
+			|| "finished_task_title";
+		    break;
+		default:
+		    alert("unknown server error");
+		}
+	    });
+	    
+	    xhr.open("POST","change_task_status"+params,false);
+	    xhr.send();
+	})
+    };
+
+    function rename_task(task, proj_name, task_box_node, task_node) {
+	return (function (new_name) {
+	    var xhr = new XMLHttpRequest();
+	    if(new_name == "" || new_name == null) return;
+	    var params = "?proj_name="+proj_name+"&task_name="+task.name+"&new_name="+new_name;
+	    
+	   xhr.onload = (function() {
+		switch(xhr.responseText){
+		case "success":
+		    task.name = new_name;
+		    task_box_node.replaceChild(create_task_node(task, proj_name, task_box_node), task_node);
+		    break;
+		case "exists":
+		    alert("task with such name already exists");
+		    break;
+		default:
+		    alert("unknown server error");
+		}
+	    });
+	    
+	    xhr.open("POST","change_task_name"+params,false);
+	    xhr.send();
+	})
+    };
+
+
+    function create_task_node(task, proj_name, task_box_node) {
     
 	var task_node = document.createElement("div");
 	task_node.className = "task_node";
 
 	var task_title = document.createElement("div");
-	task_title.className = "task_title";
+	task_title.className = (task.status)? "finished_task_title": "unfinished_task_title";
 	task_title.innerHTML = task.name;
+	task_title.onclick = change_status(task.name, proj_name, task_title);
+
+	var task_deadline = document.createElement("div");
+	task_deadline.className = "task_deadline";
+	task_deadline.innerHTML = task.deadline || "";
 
 	var task_control = document.createElement("div");
 	task_control.className = "task_control";
 	
 	var delete_task = document.createElement("button");
 	delete_task.className = "task_control";
-	delete_task.innerHTML = "delete task";
+	delete_task.innerHTML = "🗑";
 	delete_task.onclick = task_remover(task.name, task_node, proj_name);
 
-	[delete_task].map( (x) => task_control.appendChild(x) );
-	[task_title, task_control].map( (x) => task_node.appendChild(x) );
+	var change_name = document.createElement("button");
+	change_name.className = "task_control";
+	change_name.innerHTML = "🖊";
+	change_name.onclick = wrapped_input_dialog('rename',rename_task(task, proj_name, task_box_node, task_node));
+
+	var plus_prio = document.createElement("button");
+	plus_prio.className = "task_control";
+	plus_prio.innerHTML = "+";
+	plus_prio.onclick = change_task_prio(1, task.name, proj_name, task_box_node);
+
+	var minus_prio = document.createElement("button");
+	minus_prio.className = "task_control";
+	minus_prio.innerHTML = "-";
+	minus_prio.onclick = change_task_prio(-1, task.name, proj_name, task_box_node);
+
+	var change_dead = document.createElement("button");
+	change_dead.className = "task_control";
+	change_dead.innerHTML = "⏰";
+	change_dead.onclick = change_task_deadline(task.name, proj_name, task_deadline);
+
+
+	[change_name, plus_prio, minus_prio, change_dead, delete_task].map((x) => task_control.appendChild(x));
+	[task_title,task_deadline,task_control].map( (x) => task_node.appendChild(x) );
 	
 	return task_node;
     };
@@ -467,22 +760,22 @@
 	var change_name = document.createElement("button");
 	change_name.className = "project_control";
 	change_name.innerHTML = "change name";
-	change_name.onclick = proj_name_changer(project.name, proj_title);
+	change_name.onclick = wrapped_input_dialog('change name',proj_name_changer(project,proj_node));
 	
 	var change_desc = document.createElement("button");
 	change_desc.className = "project_control";
 	change_desc.innerHTML = "change description";
-	change_desc.onclick = desc_changer(project.name, proj_desc);
+	change_desc.onclick = wrapped_input_dialog('change desc',desc_changer(project.name, proj_desc, change_desc));
 	
 	var remove_project = document.createElement("button");
 	remove_project.className = "project_control";
 	remove_project.innerHTML = "remove project";
-	remove_project.onclick = project_remover(project.name, proj_node);
+	remove_project.onclick = wrapped_input_dialog('remove proj',project_remover(project.name, proj_node));
 	
 	var add_task = document.createElement("button");
 	add_task.className = "project_control";
 	add_task.innerHTML = "add task";
-	add_task.onclick = task_adder(project.name, task_box);
+	add_task.onclick = wrapped_input_dialog('taskname',task_adder(project.name, task_box));
 
 	[change_name,change_desc, remove_project, add_task].map(
 	    x => proj_control.appendChild(x)
@@ -526,9 +819,28 @@
 
     </script>
 
-    <div id="authenticated_content">
-      
-      <button onclick="create_project();" class="main_button">add project</button> <br>
+    <div id="authenticated_content" class="authenticated_content animate">
+    
+      <div class="popup_datetime animate" id="popup_datetime">
+	<input type="datetime-local" name="bdaytime" id="datetime" class="datetime_input">
+	<br>
+	<button type="button" id="datetime_submit" class="datetime_submit">submit</button>
+      </div>
+
+      <div class="popup_input animate" id="popup_input">
+	<div class="popup_input_title" id="popup_input_title"></div>
+	<input type="text" class="popup_input_text" id="popup_text">
+	<br>
+	<button type="button" id="popup_input_submit" class="popup_input_submit">
+	  submit
+	</button>
+	<button type="button" id="popup_input_cancel" class="popup_input_cancel">
+	  cancel
+	</button>	
+      </div>
+
+
+      <button onclick="input_dialog('input projname',create_project);" class="main_button">add project</button> <br>
       
       <div id="project_box">
       </div>
@@ -536,34 +848,58 @@
       <button onclick="sign_out();" class="main_button">sign out</button>
     </div>
 
-    <div id="anonymous_content">
+    <div id="anonymous_content" class="anonymous_content">
 
-      <button onclick="show_signin()">
+      <button onclick="show_signin()" class="logon_button">
 	sign in
-      </button><br>
+      </button>
 
-      <button onclick="show_signup()">
+      <button onclick="show_signup()" class="logon_button">
 	sign up
       </button>
   
-      <div id="signup" class="hidden">
+      <div id="signup" class="hidden sign_up animate">
+	<div style="border-style:dotted;padding:0px;margin:20px;background-color:#358c50">
+	  <pre style="color:white;">
+	    <b>
+_______ ____  _____   ____  _      _____  _____ _______
+|__   __/ __ \|  __ \ / __ \| |    |_   _|/ ____|__   __|
+| | | |  | | |  | | |  | | |      | | | (___    | |
+| | | |  | | |  | | |  | | |      | |  \___ \   | |
+| | | |__| | |__| | |__| | |____ _| |_ ____) |  | |
+ |_|  \____/|_____/ \____/|______|_____|_____/   |_| </b>
+for those who need plan A,B,C...
+	  </pre>
+	</div>
 	<form action="sign_up" method="post" onsubmit="return false;" id="signupform">
-	  <input type="text" pattern=".{5,64}" placeholder="username" name="username"><br>
-	  <input type="email" placeholder="email" name="email"><br>
-	  <input type="password" pattern=".{5,64}" placeholder="password" name="password"><br>
-	  <button onclick="sign_up_user();"> submit </button>
-	  <button onclick="document.getElementById('signup').style.display='none'">
+	  <input type="text" pattern=".{5,64}" placeholder="username" name="username" class="sign_up_txt"><br>
+	  <input type="email" placeholder="email" name="email" class="sign_up_txt"><br>
+	  <input type="password" pattern=".{5,64}" placeholder="password" name="password" class="sign_up_txt"><br>
+	  <button onclick="sign_up_user();" class="logon_button"> submit </button>
+	  <button onclick="document.getElementById('signup').style.display='none'"
+		  class="logon_button cancel">
 	    cancel
 	  </button>
 	</form>
       </div>
-      
-      <div id="signin" class="hidden">
-	<form action="sign_in" method="post" onsubmit="return false;" id="signinform">
-	  <input type="text" pattern=".{5,64}" placeholder="username/email" name="identity"><br>
-	  <input type="password" pattern=".{5,64}" placeholder="password" name="password"><br>
-	  <button onclick="sign_in_user();"> submit </button>
-	  <button onclick="document.getElementById('signin').style.display='none'">
+      <div id="signin" class="hidden sign_in animate">
+	<div style="border-style:dotted;padding:0px;margin:20px;background-color:#358c50">
+	  <pre style="color:white;">
+<b>_______ ____  _____   ____  _      _____  _____ _______
+|__   __/ __ \|  __ \ / __ \| |    |_   _|/ ____|__   __|
+| | | |  | | |  | | |  | | |      | | | (___    | |
+| | | |  | | |  | | |  | | |      | |  \___ \   | |
+| | | |__| | |__| | |__| | |____ _| |_ ____) |  | |
+ |_|  \____/|_____/ \____/|______|_____|_____/   |_| </b>
+for those who need plan A,B,C...
+	</pre>
+	</div>
+	
+	<form action="sign_in" method="post" onsubmit="return false;" id="signinform" class="signinform">
+	  <input type="text" pattern=".{5,64}" placeholder="username/email" name="identity" class="sign_in_txt"><br>
+	  <input type="password" pattern=".{5,64}" placeholder="password" name="password" class="sign_in_txt"><br>
+	  <button onclick="sign_in_user();" class="logon_button"> submit </button>
+	  <button onclick="hide_signin();" class="logon_button cancel">
 	    cancel
 	  </button>
 	</form>
