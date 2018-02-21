@@ -7,6 +7,7 @@ My implementation of todo web app for Ruby Garage courses (learn more [here](htt
 - [x] multiuser/multiconnection test
 - [x] divide into submodules
 - [x] documentation
-- [ ] config, gunicorn, nginx, uwsgi
-- [ ] decor/design
+- [x] decor/design
 - [ ] request parse "macro"
+- [ ] request rstrip
+- [ ] security

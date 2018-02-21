@@ -621,23 +621,23 @@ function create_project_node(project) {
     
     var change_name = document.createElement("button");
     change_name.className = "project_control";
-    change_name.innerHTML = "change name";
-    change_name.onclick = wrapped_input_dialog('change name',proj_name_changer(project,proj_node));
+    change_name.innerHTML = "rename project";
+    change_name.onclick = wrapped_input_dialog('type new name',proj_name_changer(project,proj_node));
     
     var change_desc = document.createElement("button");
     change_desc.className = "project_control";
     change_desc.innerHTML = "change description";
-    change_desc.onclick = wrapped_input_dialog('change desc',desc_changer(project.name, proj_desc, change_desc));
+    change_desc.onclick = wrapped_input_dialog('type new descriptio',desc_changer(project.name, proj_desc, change_desc));
     
     var remove_project = document.createElement("button");
     remove_project.className = "project_control";
     remove_project.innerHTML = "remove project";
-    remove_project.onclick = wrapped_input_dialog('remove proj',project_remover(project.name, proj_node));
+    remove_project.onclick = wrapped_input_dialog('remove proj? type [y]es',project_remover(project.name, proj_node));
     
     var add_task = document.createElement("button");
     add_task.className = "project_control";
     add_task.innerHTML = "create new task";
-    add_task.onclick = wrapped_input_dialog('taskname',task_adder(project.name, task_box));
+    add_task.onclick = wrapped_input_dialog('type new name for task',task_adder(project.name, task_box));
     
     [change_name,change_desc, remove_project, add_task].map(
 	x => proj_control.appendChild(x)
