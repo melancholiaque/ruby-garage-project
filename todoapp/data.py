@@ -1,6 +1,12 @@
-from peewee import *
-from todoapp import db, lm
+"""
+This module containt data application data model
+"""
+
 from flask_login import UserMixin
+from peewee import (Model, CharField, ForeignKeyField,
+                    BooleanField, DateTimeField, IntegerField)
+
+from todoapp import db, lm
 
 class User(Model, UserMixin):
     """
@@ -49,12 +55,10 @@ class Project(Model):
     class Meta():
         database = db
         indexes = (
-            (('name','owner'), True),
+            #to hasten lookups
+            (('name', 'owner'), True),
         )
 
-class PriorityField(AutoField):
-    pass
-    
 class Task(Model):
     """
     ORM for tasks
@@ -70,5 +74,6 @@ class Task(Model):
     class Meta():
         database = db
         indexes = (
-            (('name','project'), True),
+            #to hasten lookups
+            (('name', 'project'), True),
         )

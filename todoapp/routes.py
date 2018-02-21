@@ -11,7 +11,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 
 from todoapp import app, db
 from todoapp.data import Task, Project, User
-from todoapp.misc import dbError, email_correct, get_task, get_project
+from todoapp.misc import PeeweeException, email_correct, get_task, get_project
 
 @app.route('/check_user', methods=['Post'])
 def check_user():
@@ -50,8 +50,8 @@ def sign_up():
                                password_hash=password,
                                email=email)
             if not user:
-                raise dbError('failed to create user')
-        except dbError:
+                raise PeeweeException('failed to create user')
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -118,8 +118,8 @@ def create_project():
         try:
             proj = Project.create(name=name, owner=user)
             if not proj:
-                raise dbError('failed to create project')
-        except dbError:
+                raise PeeweeException('failed to create project')
+        except PeeweeException:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -144,8 +144,8 @@ def remove_project():
     with db.atomic() as tract:
         try:
             if not proj.delete_instance(recursive=True):
-                raise dbError('failed to delete project')
-        except dbError:
+                raise PeeweeException('failed to delete project')
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -175,8 +175,8 @@ def change_desc():
             proj.description = desc
             ret = proj.save()
             if not ret:
-                raise dbError('failed to change description')
-        except dbError:
+                raise PeeweeException('failed to change description')
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -210,8 +210,8 @@ def change_proj_name():
             proj.name = new_name
             ret = proj.save()
             if not ret:
-                raise dbError('failed to rename project')
-        except dbError:
+                raise PeeweeException('failed to rename project')
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -236,27 +236,20 @@ def add_task():
     if not proj:
         return dumps(dict(status='fail'))
 
-    highest = (Task
-               .select()
-               .where(Task.project == proj)
-               .order_by(Task.priority.desc()))
+    global_max = (Task
+                  .select()
+                  .order_by(Task.priority.desc()))
 
-    glob = (Task
-            .select()
-            .order_by(Task.priority.desc()))
-    
-    highest_1 = highest.get().priority+1 if highest.exists() else 0
-    highest_2 = glob.get().priority+1 if glob.exists() else 0
-    highest_prio = max(highest_1,highest_2)
-    
+    priority = global_max.get().priority+1 if global_max.exists() else 0
+
     with db.atomic() as tract:
         try:
             task = Task.create(name=task_name,
                                project=proj,
-                               priority=highest_prio)
+                               priority=priority)
             return dumps(dict(status='success', task=get_task(task)))
-        
-        except dbError:
+
+        except PeeweeException:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -289,7 +282,7 @@ def remove_task():
         try:
             task.delete_instance()
             return 'success'
-        except dbError:
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -326,11 +319,10 @@ def change_task_name():
     with db.atomic() as tract:
         try:
             task.name = new_name
-            ret = task.save()
-            if not ret:
-                raise dbError('failed to rename task')
+            if not task.save():
+                raise PeeweeException('failed to rename task')
             return 'success'
-        except dbError:
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -347,12 +339,12 @@ def change_task_prio():
     fields = proj_name, task_name, dir_ = [request.args.get(i) for i in fields]
 
     if not all(fields) or not dir_ in ('1', '-1'):
-         return dumps(dict(status='fail'))
+        return dumps(dict(status='fail'))
 
     proj = Project.get_or_none(
         Project.owner == user and Project.name == proj_name)
     if not proj:
-         return dumps(dict(status='fail'))
+        return dumps(dict(status='fail'))
 
     task = Task.get_or_none(Task.project == proj and Task.name == task_name)
     if not task:
@@ -362,13 +354,13 @@ def change_task_prio():
     swap = (Task
             .select()
             .where(Task.project == proj
-                   and Task.priority > i if dir_=='1' else Task.priority < i)
-            .order_by(Task.priority if dir_=='1' else Task.priority.desc()))
-    
+                   and Task.priority > i if dir_ == '1' else Task.priority < i)
+            .order_by(Task.priority if dir_ == '1' else Task.priority.desc()))
+
     swap = swap.get() if swap.exists() else None
     if not swap:
         return dumps(dict(status='fail'))
-    
+
     with db.atomic() as tract:
         try:
 
@@ -376,21 +368,22 @@ def change_task_prio():
             swap.priority, task.priority = -1, swap.priority
 
             if not (swap.save() and task.save()):
-                raise dbError('failed to change tasks order')
-            
+                raise PeeweeException('failed to change tasks order')
+
             swap.priority = tmp
 
-            if not(swap.save()):
-                raise dbError('failed to change tasks order')
-            
+            if not swap.save():
+                raise PeeweeException('failed to change tasks order')
+
             query = (Task
                      .select()
                      .where(Task.project == proj)
                      .order_by(Task.priority.desc()))
+            
             return dumps(dict(status='success',
                               tasks=[get_task(i) for i in query]))
 
-        except dbError:
+        except PeeweeException:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -406,7 +399,7 @@ def set_deadline():
     fields = 'proj_name', 'task_name', 'dead'
     fields = proj_name, task_name, dead = [request.args.get(i) for i in fields]
 
-    if not (proj_name and task_name):
+    if not all(fields):
         return dumps(dict(status='fail'))
 
     proj = Project.get_or_none(
@@ -422,10 +415,10 @@ def set_deadline():
         try:
             task.deadline = datetime.strptime(dead, '%Y-%m-%dT%H:%M') if dead else None
             if not task.save():
-                raise dbError('failed to change deadline')
+                raise PeeweeException('failed to change deadline')
             return dumps(dict(status='success',
                               time=task.deadline.strftime("%d/%m/%y %H:%M")))
-        except dbError:
+        except PeeweeException:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -457,9 +450,9 @@ def change_status():
         try:
             task.status = not task.status
             if not task.save():
-                raise dbError('failed to change status')
+                raise PeeweeException('failed to change status')
             return 'success'
-        except dbError:
+        except PeeweeException:
             tract.rollback()
             return 'fail'
 
@@ -487,7 +480,7 @@ def get_tasks():
     if not proj:
         return dumps(dict(status='fail'))
 
-    tasks = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
+    tasks = Task.select().where(Task.project == proj).order_by(Task.priority.desc())
 
     return dumps(dict(status='success', tasks=list(map(get_task, tasks))))
 

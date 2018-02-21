@@ -182,12 +182,10 @@ function hide_popup_datetime() {
 
 function show_popup_input() {
     document.getElementById("popup_input").style.display = "block";
-    document.getElementById("authenticated_content").style['background-color'] = "#aaaaaa";
 };
 
 function hide_popup_input() {
     document.getElementById("popup_input").style.display = "none";
-    document.getElementById("authenticated_content").style['background-color'] = "#ffffff";	
 };
 
 function show_for_anonymous() {
@@ -217,7 +215,7 @@ function task_adder(proj_name, task_box_node) {
 	    var result = JSON.parse(xhr.responseText);
 	    switch(result.status) {
 	    case "success":
-		push_task("head",result.task, task_box_node, proj_name);
+		push_task("head",result.task, task_box_node, proj_name, 1);
 		break;
 	    case "fail":
 		alert("failed to create a task");
@@ -309,8 +307,8 @@ function desc_changer(proj_name, desc_node, button) {
     });
 };
 
-function push_task(dir, task, task_box_node, proj_name){
-    var task_node = create_task_node(task, proj_name, task_box_node);
+function push_task(dir, task, task_box_node, proj_name,num){
+    var task_node = create_task_node(task, proj_name, task_box_node, num);
     if (dir=="head")
 	task_box_node.insertBefore(task_node, task_box_node.firstChild);
     else
@@ -326,7 +324,7 @@ function get_tasks(proj_name, task_box){
         switch(result.status){
         case "success":
             for(i in result.tasks){
-                push_task("tail",result.tasks[i],task_box,proj_name);
+                push_task("tail",result.tasks[i],task_box,proj_name,i);
             }
             break;
         case "fail":
@@ -378,7 +376,7 @@ function erase_box(box) {
     }
 };
 
-function change_task_deadline(task_name, proj_name, deadline_box) {
+function change_task_deadline(task, proj_name, deadline_box) {
     return (function () {
 	var btn = document.getElementById("datetime_submit");
 	var inp = document.getElementById("datetime");
@@ -390,12 +388,13 @@ function change_task_deadline(task_name, proj_name, deadline_box) {
 	    hide_popup_datetime();
             
 	    var xhr = new XMLHttpRequest();
-	    var params = "?proj_name="+proj_name+"&task_name="+task_name+"&dead="+dead;
+	    var params = "?proj_name="+proj_name+"&task_name="+task.name+"&dead="+dead;
             
 	    xhr.onload = (function() {
 		var result = JSON.parse(xhr.responseText);
 		switch(result.status) {
 		case "success":
+                    task.deadline = result.time;
 		    deadline_box.innerHTML = result.time || "";
 		    break;
 		case "fail":
@@ -476,7 +475,7 @@ function change_task_prio(dir, task_name, proj_name, task_box_node){
 	    case "success":
 		erase_box(task_box_node);
 		for(i in result.tasks) {
-		    push_task("tail", result.tasks[i], task_box_node, proj_name);
+		    push_task("tail", result.tasks[i], task_box_node, proj_name, -1);
 		}
 		break;
 	    case "fail":
@@ -491,7 +490,7 @@ function change_task_prio(dir, task_name, proj_name, task_box_node){
     });
 };
 
-function change_status(task_name, proj_name, task_title) {
+function change_status(task_name, proj_name, task_node, button) {
     return (function () {
  	var xhr = new XMLHttpRequest();
 	var params = "?proj_name="+proj_name+"&task_name="+task_name;
@@ -499,9 +498,12 @@ function change_status(task_name, proj_name, task_title) {
 	xhr.onload = (function() {
 	    switch(xhr.responseText){
 	    case "success":
-		task_title.className = (task_title.className == "finished_task_title")
-		    && "unfinished_task_title"
-		    || "finished_task_title";
+		task_node.className = (task_node.className == "finished_task")
+		    && "unfinished_task"
+		    || "finished_task";
+                button.innerHTML = (task_node.className == "finished_task")
+                    && "❌"
+                    || "✅";
 		break;
 	    default:
 		alert("unknown server error");
@@ -510,7 +512,7 @@ function change_status(task_name, proj_name, task_title) {
 	
 	xhr.open("POST","change_task_status"+params,false);
 	xhr.send();
-    })
+    });
 };
 
 function rename_task(task, proj_name, task_box_node, task_node) {
@@ -523,7 +525,7 @@ function rename_task(task, proj_name, task_box_node, task_node) {
 	    switch(xhr.responseText){
 	    case "success":
 		task.name = new_name;
-		task_box_node.replaceChild(create_task_node(task, proj_name, task_box_node), task_node);
+		task_box_node.replaceChild(create_task_node(task, proj_name, task_box_node,1), task_node);
 		break;
 	    case "exists":
 		alert("task with such name already exists");
@@ -539,22 +541,24 @@ function rename_task(task, proj_name, task_box_node, task_node) {
 };
 
 
-function create_task_node(task, proj_name, task_box_node) {
-    
+function create_task_node(task, proj_name, task_box_node, num) {
+
     var task_node = document.createElement("div");
-    task_node.className = "task_node";
+    task_node.className = (task.status)? "finished_task": "unfinished_task";
+    if(num != -1){
+        task_node.className+=" animate"+((num < 6)?num:5);
+    }
     
     var task_title = document.createElement("div");
-    task_title.className = (task.status)? "finished_task_title": "unfinished_task_title";
-    task_title.innerHTML = task.name;
-    task_title.onclick = change_status(task.name, proj_name, task_title);
+    task_title.className="task_title"
+    task_title.innerHTML=task.name;
     
     var task_deadline = document.createElement("div");
     task_deadline.className = "task_deadline";
     task_deadline.innerHTML = task.deadline || "";
     
     var task_control = document.createElement("div");
-    task_control.className = "task_control";
+    task_control.className = "task_control_box";
     
     var delete_task = document.createElement("button");
     delete_task.className = "task_control";
@@ -575,14 +579,19 @@ function create_task_node(task, proj_name, task_box_node) {
     minus_prio.className = "task_control";
     minus_prio.innerHTML = "-";
     minus_prio.onclick = change_task_prio(-1, task.name, proj_name, task_box_node);
+
+    var mark_done_undone = document.createElement("button");
+    mark_done_undone.className = "task_control";
+    mark_done_undone.innerHTML = (task.status)? "❌":"✅";
+    mark_done_undone.onclick = change_status(task.name, proj_name, task_node, mark_done_undone);
     
     var change_dead = document.createElement("button");
     change_dead.className = "task_control";
     change_dead.innerHTML = "⏰";
-    change_dead.onclick = change_task_deadline(task.name, proj_name, task_deadline);
+    change_dead.onclick = change_task_deadline(task, proj_name, task_deadline);
     
     
-    [change_name, plus_prio, minus_prio, change_dead, delete_task].map((x) => task_control.appendChild(x));
+    [change_name,change_dead, plus_prio, minus_prio,mark_done_undone, delete_task].map((x) => task_control.appendChild(x));
     [task_title,task_deadline,task_control].map( (x) => task_node.appendChild(x) );
     
     return task_node;
@@ -591,7 +600,7 @@ function create_task_node(task, proj_name, task_box_node) {
 function create_project_node(project) {
     
     var proj_node = document.createElement("div");
-    proj_node.className = "project_node";
+    proj_node.className = "project_node animate0";
     
     var proj_node_head = document.createElement("div");
     proj_node_head.className = "project_head";
@@ -608,7 +617,7 @@ function create_project_node(project) {
     task_box.className = "task_box";
     
     var proj_control = document.createElement("div");
-    proj_control.className = "project_control";
+    proj_control.className = "project_control_box";
     
     var change_name = document.createElement("button");
     change_name.className = "project_control";
@@ -627,7 +636,7 @@ function create_project_node(project) {
     
     var add_task = document.createElement("button");
     add_task.className = "project_control";
-    add_task.innerHTML = "add task";
+    add_task.innerHTML = "create new task";
     add_task.onclick = wrapped_input_dialog('taskname',task_adder(project.name, task_box));
     
     [change_name,change_desc, remove_project, add_task].map(
@@ -661,7 +670,7 @@ function load_user_data() {
 	    var task_box_node = push_project("tail",result[i]);
 	    var tasks = result[i].tasks;
 	    for(j in tasks) {
-		push_task("tail",tasks[j], task_box_node, result[i].name);
+		push_task("tail",tasks[j], task_box_node, result[i].name, j);
 	    }
 	}
     });
