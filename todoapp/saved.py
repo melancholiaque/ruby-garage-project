@@ -1,33 +1,18 @@
-"""
-This module contains routing logic alongside with all necessary
-response logic e.g. database CRUD operations.
-"""
-
-from json import dumps
-from datetime import datetime
-
-from flask import render_template, request
-from flask_login import login_user, logout_user, login_required, current_user
-
+from json import dumps, loads
 from todoapp import app, db
 from todoapp.data import Task, Project, User
+from flask import render_template, request, redirect, url_for
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from datetime import datetime
 from todoapp.misc import dbError, email_correct, get_task, get_project
 
 @app.route('/check_user', methods=['Post'])
 def check_user():
-    """
-    Determines either user is authenticated
-    and send proper answer to client
-    """
     return f"{'authenticated' if current_user.is_authenticated else 'anonymous'}"
 
 
 @app.route('/sign_up', methods=['POST'])
 def sign_up():
-    """
-    Handles user sign_up i.e. User instance creation
-    and send operation status back to client
-    """
 
     fields = 'username', 'password', 'email'
     fields = username, password, email = [request.args.get(i) for i in fields]
@@ -51,7 +36,7 @@ def sign_up():
                                email=email)
             if not user:
                 raise dbError('failed to create user')
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
@@ -62,10 +47,6 @@ def sign_up():
 
 @app.route('/sign_in', methods=['POST'])
 def sign_in():
-    """
-    Performs user input check, login if creditnails are
-    correct and send response to client
-    """
 
     fields = 'identity', 'password'
     fields = identity, password = [request.args.get(i) for i in fields]
@@ -90,9 +71,6 @@ def sign_in():
 @app.route('/sign_out', methods=['POST'])
 @login_required
 def sign_out():
-    """
-    Logout user, send blank response
-    """
     logout_user()
     return ''
 
@@ -100,10 +78,6 @@ def sign_out():
 @app.route('/create_project', methods=['POST'])
 @login_required
 def create_project():
-    """
-    Creating Project instance and send view representation
-    back to client
-    """
 
     user = current_user.self
     name = request.args.get('name')
@@ -119,7 +93,7 @@ def create_project():
             proj = Project.create(name=name, owner=user)
             if not proj:
                 raise dbError('failed to create project')
-        except dbError:
+        except:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -130,9 +104,6 @@ def create_project():
 @app.route('/remove_project', methods=['POST'])
 @login_required
 def remove_project():
-    """
-    Removes project and sends operation status back to client
-    """
 
     user = current_user.self
     name = request.args.get('proj_name')
@@ -146,7 +117,7 @@ def remove_project():
             ret = proj.delete_instance(recursive=True)
             if not ret:
                 raise dbError('failed to delete project')
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
@@ -156,9 +127,6 @@ def remove_project():
 @app.route('/change_desc', methods=['POST'])
 @login_required
 def change_desc():
-    """
-    Handles change of Project description
-    """
 
     user = current_user.self
     fields = 'proj_name', 'desc'
@@ -177,7 +145,7 @@ def change_desc():
             ret = proj.save()
             if not ret:
                 raise dbError('failed to change description')
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
@@ -187,9 +155,6 @@ def change_desc():
 @app.route('/change_proj_name', methods=['POST'])
 @login_required
 def change_proj_name():
-    """
-    Handles change of Project name
-    """
 
     user = current_user.self
     fields = 'curr_name', 'new_name'
@@ -212,7 +177,7 @@ def change_proj_name():
             ret = proj.save()
             if not ret:
                 raise dbError('failed to rename project')
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
@@ -222,9 +187,6 @@ def change_proj_name():
 @app.route('/add_task', methods=['POST'])
 @login_required
 def add_task():
-    """
-    Creates task and send operation status back to client
-    """
 
     user = current_user.self
     fields = 'proj_name', 'task_name'
@@ -254,7 +216,7 @@ def add_task():
                                    project=proj)
                 if not task:
                     raise dbError('failed to create task')
-        except dbError:
+        except:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -264,10 +226,6 @@ def add_task():
 @app.route('/remove_task', methods=['POST'])
 @login_required
 def remove_task():
-    """
-    Removes task and send operation status back to client
-    """
-
     user = current_user.self
     fields = 'proj_name', 'task_name'
     fields = proj_name, task_name = [request.args.get(i) for i in fields]
@@ -318,7 +276,7 @@ def remove_task():
 
             return 'success'
 
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
@@ -326,10 +284,7 @@ def remove_task():
 @app.route('/change_task_name', methods=['POST'])
 @login_required
 def change_task_name():
-    """
-    Handles change of task name
-    """
-
+	
     user = current_user.self
     fields = 'proj_name', 'task_name', 'new_name'
     fields = proj_name, task_name, new_name = [
@@ -356,33 +311,17 @@ def change_task_name():
         try:
             task.name = new_name
             ret = task.save()
-            if not ret:
-                raise dbError('failed to rename task')
+            if not ret: raise dbError('failed to rename task')
             return 'success'
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
-
+        
 @app.route('/change_task_prio', methods=['POST'])
 @login_required
 def change_task_prio():
-    """
-    This method is quite tricky. As long as we dont have
-    Task.id lookups we don't really care about both
-    id->Task and Task->id mappings. Consequently
-    we are free to swap names, statuses and deadlines
-    of tasks instead of swapping next/prev pointers.
-    This need rework if you plan to implement id-realtive
-    operations:
-
-    instead of storing next/prev pointers directly in task
-    instance, create an additional database model to store
-    next/prev pointer and foreign key of underlying task,
-    so that you can easily swap these keys and don't break
-    id mappings
-    """
-
+    
     user = current_user.self
     fields = 'proj_name', 'task_name', 'dir'
     fields = proj_name, task_name, dir_ = [request.args.get(i) for i in fields]
@@ -410,26 +349,23 @@ def change_task_prio():
             swap.name, task.name = task.name, swap.name
             swap.status, task.status = task.status, swap.status
             swap.deadline, task.deadline = task.deadline, swap.deadline
-
+            
             if not (swap.save() and task.save()):
                 raise dbError('failed to change tasks order')
-
+            
             query = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
             return dumps(dict(status='success',
                               tasks=[get_task(i) for i in query]))
 
-        except dbError:
+        except:
             tract.rollback()
             return dumps(dict(status='fail'))
 
-
+        
 @app.route('/set_deadline', methods=['POST'])
 @login_required
 def set_deadline():
-    """
-    Set new task deadline
-    """
-
+    
     user = current_user.self
     fields = 'proj_name', 'task_name', 'dead'
     fields = proj_name, task_name, dead = [request.args.get(i) for i in fields]
@@ -449,11 +385,10 @@ def set_deadline():
     with db.atomic() as tract:
         try:
             task.deadline = datetime.strptime(dead, '%Y-%m-%dT%H:%M') if dead else None
-            if not task.save():
-                raise dbError('failed to change deadline')
+            if not task.save(): raise dbError('failed to change deadline')
             return dumps(dict(status='success',
                               time=task.deadline.strftime("%d/%m/%y %H:%M")))
-        except dbError:
+        except:
             tract.rollback()
             return dumps(dict(status='fail'))
 
@@ -461,10 +396,7 @@ def set_deadline():
 @app.route('/change_task_status', methods=['POST'])
 @login_required
 def change_status():
-    """
-    Handles change of task status
-    """
-
+    
     user = current_user.self
     fields = 'proj_name', 'task_name'
     fields = proj_name, task_name = [request.args.get(i) for i in fields]
@@ -487,16 +419,13 @@ def change_status():
             if not task.save():
                 raise dbError('failed to change status')
             return 'success'
-        except dbError:
+        except:
             tract.rollback()
             return 'fail'
 
 @app.route('/get_user_data', methods=['GET'])
 @login_required
 def get_user_data():
-    """
-    Returns view data for authenticated user
-    """
     projs = Project.select().where(Project.owner == current_user.self)
     return dumps(list(map(get_project, projs)))
 
@@ -504,9 +433,6 @@ def get_user_data():
 @app.route('/get_tasks', methods=['POST'])
 @login_required
 def get_tasks():
-    """
-    Returns list of tasks associated with Project
-    """
     user = current_user.self
     proj_name = request.args.get('proj_name')
 
@@ -523,8 +449,4 @@ def get_tasks():
 @app.route('/')
 @app.route('/index')
 def index():
-    """
-    Renders home page (as long as this is one page app)
-    it is only render function in this module
-    """
     return render_template('main.html')

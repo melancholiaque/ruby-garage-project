@@ -239,6 +239,10 @@
 		alert("incorrect email adress")
 		break;
 
+            case "fail":
+                alert("failed to create user");
+                break;
+
 	    default:
 		alert("unknown server error");
 	    }
@@ -303,7 +307,7 @@
 		alert("such project already exists");
 		break;
 	    case "fail":
-		alrt("fail");
+		alrt("failed to create project");
 		break;
 	    default:
 		alert("unknown server error");;
@@ -488,6 +492,29 @@
 	    task_box_node.appendChild(task_node);
     };
 
+function get_tasks(proj_name, task_box){
+    var xhr = new XMLHttpRequest();
+    var params = "?proj_name="+proj_name;
+
+    xhr.onload = (function(){
+        var result = JSON.parse(xhr.responseText);
+        switch(result.status){
+        case "success":
+            for(i in result.tasks){
+                push_task("tail",result.tasks[i],task_box,proj_name);
+            }
+            break;
+        case "fail":
+            break;
+        default:
+            alert("unknown server error");
+        }
+    });
+    
+    xhr.open("POST","get_tasks"+params,false);
+    xhr.send();
+}
+
     function proj_name_changer(project, proj_node) {
 	return (function(new_name) {
 	    if(new_name == "" || new_name == null) return;
@@ -501,6 +528,7 @@
 		case "success":
 		    project.name = new_name;
 		    var a = create_project_node(project);
+                    get_tasks(new_name, a.task_box);
 		    proj_node.parentNode.replaceChild(a.node_itself, proj_node);
 		    break;
 		case "exists":
