@@ -143,8 +143,7 @@ def remove_project():
 
     with db.atomic() as tract:
         try:
-            ret = proj.delete_instance(recursive=True)
-            if not ret:
+            if not proj.delete_instance(recursive=True):
                 raise dbError('failed to delete project')
         except dbError:
             tract.rollback()
@@ -237,28 +236,30 @@ def add_task():
     if not proj:
         return dumps(dict(status='fail'))
 
-    highest = Task.get_or_none(Task.upper == -1)
+    highest = (Task
+               .select()
+               .where(Task.project == proj)
+               .order_by(Task.priority.desc()))
 
+    glob = (Task
+            .select()
+            .order_by(Task.priority.desc()))
+    
+    highest_1 = highest.get().priority+1 if highest.exists() else 0
+    highest_2 = glob.get().priority+1 if glob.exists() else 0
+    highest_prio = max(highest_1,highest_2)
+    
     with db.atomic() as tract:
         try:
-            if highest:
-                task = Task.create(name=task_name,
-                                   project=proj,
-                                   lower=highest)
-                highest.upper = task.id
-                ret = highest.save()
-                if not (task and ret):
-                    raise dbError('failed to create task')
-            else:
-                task = Task.create(name=task_name,
-                                   project=proj)
-                if not task:
-                    raise dbError('failed to create task')
+            task = Task.create(name=task_name,
+                               project=proj,
+                               priority=highest_prio)
+            return dumps(dict(status='success', task=get_task(task)))
+        
         except dbError:
             tract.rollback()
             return dumps(dict(status='fail'))
 
-    return dumps(dict(status='success', task=get_task(task)))
 
 
 @app.route('/remove_task', methods=['POST'])
@@ -284,40 +285,10 @@ def remove_task():
     if not task:
         return 'fail'
 
-    prev_task = Task.get_or_none(
-        Task.project == proj and Task.upper == task.id)
-    next_task = Task.get_or_none(
-        Task.project == proj and Task.lower == task.id)
-
     with db.atomic() as tract:
         try:
-            # only task in the list
-            if not (prev_task or next_task):
-                if not task.delete_instance():
-                    raise dbError('task deletion failed')
-
-            # upper task in the list
-            elif not next_task:
-                prev_task.upper = -1
-                if not (prev_task.save() and task.delete_instance()):
-                    raise dbError('task deletion failed')
-
-            # lower task in the list
-            elif not prev_task:
-                next_task.lower = -1
-                if not (next_task.save() and task.delete_instance()):
-                    raise dbError('task deletion failed')
-
-            # somewhere in the middle of the list
-            else:
-                prev_task.upper, next_task.lower = next_task.id, prev_task.id
-                if not (next_task.save()
-                        and prev_task.save()
-                        and task.delete_instance()):
-                    raise dbError('task deletion failed')
-
+            task.delete_instance()
             return 'success'
-
         except dbError:
             tract.rollback()
             return 'fail'
@@ -368,19 +339,7 @@ def change_task_name():
 @login_required
 def change_task_prio():
     """
-    This method is quite tricky. As long as we dont have
-    Task.id lookups we don't really care about both
-    id->Task and Task->id mappings. Consequently
-    we are free to swap names, statuses and deadlines
-    of tasks instead of swapping next/prev pointers.
-    This need rework if you plan to implement id-realtive
-    operations:
-
-    instead of storing next/prev pointers directly in task
-    instance, create an additional database model to store
-    next/prev pointer and foreign key of underlying task,
-    so that you can easily swap these keys and don't break
-    id mappings
+    Swaps priorities with current and lower/upper tasks
     """
 
     user = current_user.self
@@ -388,33 +347,46 @@ def change_task_prio():
     fields = proj_name, task_name, dir_ = [request.args.get(i) for i in fields]
 
     if not all(fields) or not dir_ in ('1', '-1'):
-        return dumps(dict(status='fail'))
+         return dumps(dict(status='fail'))
 
     proj = Project.get_or_none(
         Project.owner == user and Project.name == proj_name)
     if not proj:
-        return dumps(dict(status='fail'))
+         return dumps(dict(status='fail'))
 
     task = Task.get_or_none(Task.project == proj and Task.name == task_name)
-    if not task or (task.lower == -1 and dir_ == '-1') or (task.upper == -1 and dir_ == '1'):
+    if not task:
         return dumps(dict(status='fail'))
 
-    accessor = task.upper if dir_ == '1' else task.lower
-    swap = Task.get_or_none(Task.project == proj and Task.id == accessor)
-
+    i = task.priority
+    swap = (Task
+            .select()
+            .where(Task.project == proj
+                   and Task.priority > i if dir_=='1' else Task.priority < i)
+            .order_by(Task.priority if dir_=='1' else Task.priority.desc()))
+    
+    swap = swap.get() if swap.exists() else None
     if not swap:
         return dumps(dict(status='fail'))
-
+    
     with db.atomic() as tract:
         try:
-            swap.name, task.name = task.name, swap.name
-            swap.status, task.status = task.status, swap.status
-            swap.deadline, task.deadline = task.deadline, swap.deadline
+
+            tmp = task.priority
+            swap.priority, task.priority = -1, swap.priority
 
             if not (swap.save() and task.save()):
                 raise dbError('failed to change tasks order')
+            
+            swap.priority = tmp
 
-            query = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
+            if not(swap.save()):
+                raise dbError('failed to change tasks order')
+            
+            query = (Task
+                     .select()
+                     .where(Task.project == proj)
+                     .order_by(Task.priority.desc()))
             return dumps(dict(status='success',
                               tasks=[get_task(i) for i in query]))
 

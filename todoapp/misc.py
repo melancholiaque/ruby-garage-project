@@ -32,14 +32,16 @@ def get_task(task):
                 deadline=task.deadline
                          and task.deadline.strftime("%d/%m/%y %H:%M"))
 
-
 def get_project(proj, with_tasks=True):
     """
     Returns single project representation and all
     optionally embed depending task
     """
     if with_tasks:
-        query = Task.select().where(Task.project == proj).order_by(Task.lower.desc())
+        query = (Task
+                 .select()
+                 .where(Task.project == proj)
+                 .order_by(Task.priority.desc()))
     else:
         query = []
     return dict(name=proj.name,

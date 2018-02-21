@@ -2,13 +2,7 @@ from peewee import *
 from todoapp import db, lm
 from flask_login import UserMixin
 
-
-class BaseModel(Model):
-    class Meta():
-        database = db
-
-
-class User(BaseModel, UserMixin):
+class User(Model, UserMixin):
     """
     ORM for user instance
     """
@@ -17,6 +11,9 @@ class User(BaseModel, UserMixin):
     username = CharField(unique=True)
     password_hash = CharField(null=False)
     email = CharField(null=False)
+
+    class Meta():
+        database = db
 
     @property
     def self(self):
@@ -39,7 +36,7 @@ def load_user(uid):
     return User.get_or_none(User.id == uid)
 
 
-class Project(BaseModel):
+class Project(Model):
     """
     ORM for projects
     """
@@ -49,7 +46,16 @@ class Project(BaseModel):
     description = CharField(null=True)
     owner = ForeignKeyField(User)
 
-class Task(BaseModel):
+    class Meta():
+        database = db
+        indexes = (
+            (('name','owner'), True),
+        )
+
+class PriorityField(AutoField):
+    pass
+    
+class Task(Model):
     """
     ORM for tasks
     """
@@ -59,19 +65,10 @@ class Task(BaseModel):
     status = BooleanField(default=False)
     deadline = DateTimeField(null=True)
     project = ForeignKeyField(Project)
-    lower = IntegerField(default=-1)
-    upper = IntegerField(default=-1)
+    priority = IntegerField(unique=True, null=False)
 
     class Meta():
         database = db
         indexes = (
-            # speed up access
-            (('owner', 'name'), True)
+            (('name','project'), True),
         )
-
-"""class TaskOrder(BaseModel):
-
-    #id created internally
-    lower = IntegerField(default=-1)
-    task = ForeignKeyField(Task)
-    upper = IntegerField(default=-1)"""

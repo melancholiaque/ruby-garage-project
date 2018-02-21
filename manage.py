@@ -33,7 +33,7 @@ def tables_init():
         try:
             table.create_table()
         except Exception as e:
-            print(f'{table_name} table error:\
+            print(f'{table_name} table error {type(e)}:{e}\
             check your postgre server and premissions')
         else:
             print(f'{table_name} table initializaed successfully')
@@ -49,7 +49,7 @@ def tables_drop():
     database table deletion
     """
     from todoapp.data import db, Project, Task, User
-    db.drop_tables((Project, Task, User))
+    db.drop_tables((Task,Project,User))
     print('data tables dropped successfully')
 
 
