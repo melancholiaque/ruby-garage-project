@@ -1,0 +1,160 @@
+.hidden {
+    display: none;
+}
+
+div {
+    overflow:auto;
+    border-style: solid;
+    padding: 5px;
+    margin:2px;
+    text-align:center;
+}
+
+.sign_up_txt, .sign_in_txt {
+    padding: 4% 5%;
+    margin: 3% auto;
+}
+
+button {
+    cursor: pointer;
+    background-color: #358c50;
+}
+
+.logon_button {
+    color:white;
+    border: none;
+    cursor: pointer;
+    width: 15%;
+    height:30px;
+}
+
+.cancel {
+    background-color:#ad3f30;
+}
+
+.logon_button:hover {
+    opacity: 0.8;
+}
+
+.main_button {
+    margin:auto;
+    width:30%;
+    height:30px;
+    border: solid;
+}
+
+#project_box {
+    margin-left:auto;
+    margin-right:auto;
+    width:50%;
+}
+
+.project_node {
+}
+
+.project_head {
+    border-style: solid;
+    text-align: center;
+}
+
+.project_title {
+    
+}
+
+.task_deadline{
+    width:auto1;
+    display:inline-block;
+    margin: 6px 0%;
+    padding:0% 0%;
+}
+
+.project_desc {
+}
+
+.project_control {
+}
+
+.task_box {	
+}
+
+.task_node {
+}
+
+.unfinished_task_title {
+    text-decoration: none;
+    width:auto%;
+}
+
+.finished_task_title {
+    text-decoration: line-through;
+    width:auto%;
+}
+
+.task_control {
+    width:20%;
+    display:inline-block;
+}
+
+.popup_datetime {
+    position: fixed;
+    bottom: 40%;
+    right: 35%;
+    width: 40%;
+    height: 18%;
+    background-color: white;
+    line-height: 500%;
+    display:none;
+}
+
+.popup_input {
+    display:none;
+    position:fixed;
+    width: 40%;
+    margin:5% 28%;
+    background-color: white;
+}
+
+.popup_input_title {
+    
+}
+
+.sign_in, .sign_up {
+    border: 1px solid #888;
+    background:white;
+    margin:auto;
+    margin-top:5%;
+    padding:5% 0%;
+    heigth:100%;
+    width:40%;
+}
+
+form {
+    margin:auto;	
+}
+
+.animate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)}
+    to {-webkit-transform: scale(1)}
+}
+
+@keyframes animatezoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+}
+
+.anonymous_content, .authenticated_content {
+    position: fixed;
+    margin: 0%;
+    padding:0%;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding-top: 2%;
+} 

@@ -499,4 +499,4 @@ def index():
     Renders home page (as long as this is one page app)
     it is only render function in this module
     """
-    return render_template('main.html')
+    return render_template('mainpage.html', title=f'hello, anon')
