@@ -3,7 +3,7 @@
 }
 
 body {
-    background: url("pic.jpeg");
+    background-color:#77583f;
     margin: 0;
     font-family: 'VT323', monospace;
     font-size: 20px;
@@ -76,6 +76,7 @@ button {
 }
 
 .project_head {
+    border: solid 2px #999999;
     text-align: center;
     background-color:#358c50;
     color: white;
