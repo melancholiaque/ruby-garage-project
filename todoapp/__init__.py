@@ -12,7 +12,23 @@ if not key:
                     'please set TodoAppSecretKey '
                     'environmental variable')
 app.secret_key = key
-db = PostgresqlDatabase("todo-app-database")
+try:
+    db = PostgresqlDatabase("todo-app-database")
+except:
+    import urllib.parse as urlparse
+    
+    url = urlparse.urlparse(environ['DATABASE_URL'])
+    dbname = url.path[1:]
+    user = url.username
+    password = url.password
+    host = url.hostname
+    port = url.port
+
+    db = PostgresqlDatabase(dbname
+                            user=user,
+                            password=password,
+                            host=host,
+                            port=port)
 lm = LoginManager()
 lm.init_app(app)
 crypt = Bcrypt(app)
