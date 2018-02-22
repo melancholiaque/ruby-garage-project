@@ -18,7 +18,7 @@ function check_user() {
 	    break;		
 	}
 	});
-    xhr.open("POST", "check_user", false);
+    xhr.open("POST", "check_user", true);
     xhr.send();
 };
 
@@ -134,14 +134,14 @@ function create_project(proj_name) {
 	    alert("unknown server error");;
 	}
     });
-    xhr.open("POST", "create_project"+params, false);
+    xhr.open("POST", "create_project"+params, true);
     xhr.send();
 };
 
 function sign_out() {
     var xhr = new XMLHttpRequest();
     xhr.onload = () => (clear_forms() || erase_user_data() || show_for_anonymous());
-    xhr.open("POST", "sign_out", false);
+    xhr.open("POST", "sign_out", true);
     xhr.send();
 };
 
@@ -225,7 +225,7 @@ function task_adder(proj_name, task_box_node) {
 	    }
 	});
 	
-	xhr.open("POST","add_task"+params,false);
+	xhr.open("POST","add_task"+params,true);
 	xhr.send();
     });
 };
@@ -249,7 +249,7 @@ function task_remover(task_name, task_node, proj_name) {
 	    }
 	});
 	
-	xhr.open("POST", "remove_task"+params, false);
+	xhr.open("POST", "remove_task"+params, true);
 	xhr.send();
     });
 };
@@ -276,7 +276,7 @@ function project_remover(proj_name, proj_node) {
 	    }
 	});
 	
-	xhr.open("POST","remove_project"+params, false);
+	xhr.open("POST","remove_project"+params, true);
 	xhr.send();
     });
 };
@@ -302,7 +302,7 @@ function desc_changer(proj_name, desc_node, button) {
 	    }
 	});
 	
-	xhr.open("POST","change_desc"+params, false);
+	xhr.open("POST","change_desc"+params, true);
 	xhr.send();
     });
 };
@@ -334,7 +334,7 @@ function get_tasks(proj_name, task_box){
         }
     });
     
-    xhr.open("POST","get_tasks"+params,false);
+    xhr.open("POST","get_tasks"+params,true);
     xhr.send();
 }
 
@@ -365,7 +365,7 @@ function proj_name_changer(project, proj_node) {
 	    }
 	});
 	
-	xhr.open("POST", "change_proj_name"+params, false);
+	xhr.open("POST", "change_proj_name"+params, true);
 	xhr.send();
     });
 };
@@ -404,7 +404,7 @@ function change_task_deadline(task, proj_name, deadline_box) {
 		}
 	    });
 	    
-	    xhr.open('POST','set_deadline'+params,false);
+	    xhr.open('POST','set_deadline'+params,true);
 	    xhr.send();
 	});
 	
@@ -436,7 +436,7 @@ function input_dialog(title_text,handler) {
 	submit.onclick = null;
 	cancel.onclick = null;
 	hide_popup_input();
-	handler(text_node.value);
+	handler(text_node.value.trim());
     });
     cancel.onclick = (function() {
         window.onmousedown = null;
@@ -485,7 +485,7 @@ function change_task_prio(dir, task_name, proj_name, task_box_node){
 	    }
 	});
 	
-	xhr.open("POST","change_task_prio"+params,false);
+	xhr.open("POST","change_task_prio"+params,true);
 	xhr.send();
     });
 };
@@ -510,7 +510,7 @@ function change_status(task_name, proj_name, task_node, button) {
 	    }
 	});
 	
-	xhr.open("POST","change_task_status"+params,false);
+	xhr.open("POST","change_task_status"+params,true);
 	xhr.send();
     });
 };
@@ -535,7 +535,7 @@ function rename_task(task, proj_name, task_box_node, task_node) {
 	    }
 	});
 	
-	xhr.open("POST","change_task_name"+params,false);
+	xhr.open("POST","change_task_name"+params,true);
 	xhr.send();
     })
 };
@@ -675,6 +675,6 @@ function load_user_data() {
 	}
     });
     
-    xhr.open("GET", "get_user_data", false);
+    xhr.open("GET", "get_user_data", true);
     xhr.send();
 };

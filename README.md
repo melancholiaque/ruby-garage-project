@@ -8,6 +8,7 @@ My implementation of todo web app for Ruby Garage courses (learn more [here](htt
 - [x] divide into submodules
 - [x] documentation
 - [x] decor/design
-- [ ] request parse "macro"
-- [ ] request rstrip
 - [ ] security
+- [ ] rewrite to id's
+- [x] integrate queries
+- [x] async request?

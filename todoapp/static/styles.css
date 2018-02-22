@@ -100,12 +100,12 @@ button {
 }
 
 .project_control {
-    background-color:transparent;
     color:#cccccc;
+    background-color:#358c50;    
     border: 2px solid #999999;
     cursor: pointer;
     width: 18%;
-    height:50%;
+    height:auto;
     display:inline-block;
     font-family: 'VT323', monospace;
     font-size: 20px;
@@ -117,8 +117,7 @@ button {
 }
 
 .project_control_box {
-    position: relative;
-    height:100px;
+    height:auto;
     bottom:0;
 }
 
@@ -183,12 +182,11 @@ button {
 
 .popup_datetime {
     background-color:#358c50;
+    border: solid 1px #999999;
     display:none;
-    margin-left:auto;
-    margin-right:auto;
-    margin-top:5%;
-    margin-bot:0%
+    position:fixed;
     left:35%;
+    top:30%;
     width:30%;
 }
 .datetime_submit {
@@ -209,13 +207,12 @@ button {
 }
 
 .popup_input {
+    position:fixed;
+    border: solid 1px #999999;
     background-color:#358c50;
     display:none;
-    margin-left:auto;
-    margin-right:auto;
-    margin-top:5%;
-    margin-bot:0%
     left:35%;
+    top:30%;
     width:30%;
 }
 
