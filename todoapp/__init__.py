@@ -24,7 +24,7 @@ except:
     host = url.hostname
     port = url.port
 
-    db = PostgresqlDatabase(dbname
+    db = PostgresqlDatabase(dbname,
                             user=user,
                             password=password,
                             host=host,
