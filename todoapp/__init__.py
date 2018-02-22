@@ -14,7 +14,7 @@ if not key:
                     'environmental variable')
 app.secret_key = key
 
-url = urlparse.urlparse(os.environ['DATABASE_URL'])
+url = urlparse(environ['DATABASE_URL'])
 dbname = url.path[1:]
 user = url.username
 password = url.password
