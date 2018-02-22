@@ -2,8 +2,8 @@ import psycopg2
 
 class DbBinding():
 
-    def __init__(self,dbname):
-        self.conn = psycopg2.connect(f'dbname={dbname}')
+    def __init__(self,*args,**kwargs):
+        self.conn = psycopg2.connect(*args,,**kwargs)
 
     def get_statuses(self):
         with self.conn:
@@ -127,5 +127,20 @@ class DbBinding():
             print()
 
 if __name__=='__main__':
-    d = DbBinding('todo-app-database')
+    import psycopg2
+    import urllib.parse as urlparse
+    import os
+
+    url = urlparse.urlparse(os.environ['DATABASE_URL'])
+    dbname = url.path[1:]
+    user = url.username
+    password = url.password
+    host = url.hostname
+    port = url.port
+
+    d = DbBinding(dbname=dbname,
+                  user=user,
+                  password=password,
+                  host=host,
+                  port=port)
     d.test()
