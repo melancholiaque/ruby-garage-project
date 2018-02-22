@@ -3,7 +3,7 @@ import psycopg2
 class DbBinding():
 
     def __init__(self,*args,**kwargs):
-        self.conn = psycopg2.connect(*args,,**kwargs)
+        self.conn = psycopg2.connect(*args,**kwargs)
 
     def get_statuses(self):
         with self.conn:
