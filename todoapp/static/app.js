@@ -148,23 +148,19 @@ function sign_out() {
 function show_signin() {
     document.getElementById("signup").style.display = "none";
     document.getElementById("signin").style.display = "block";
-    document.getElementById("anonymous_content").style['background-color'] = "#aaaaaa";
 };
 
 function hide_signin() {
     document.getElementById("signin").style.display = "none";
-    document.getElementById("anonymous_content").style['background-color'] = "#ffffff";
 };
 
 function show_signup() {
     document.getElementById("signin").style.display = "none";
     document.getElementById("signup").style.display = "block";
-    document.getElementById("anonymous_content").style['background-color'] = "#aaaaaa";
 };
 
 function hide_signup() {
     document.getElementById("signup").style.display = "none";
-    document.getElementById("anonymous_content").style['background-color'] = "#ffffff";
 };
 
 function show_for_authenticated() {
