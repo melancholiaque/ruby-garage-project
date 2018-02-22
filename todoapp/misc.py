@@ -27,7 +27,8 @@ def get_task(task):
     """
     Returns single task representation
     """
-    return dict(name=task.name,
+    return dict(tid=task.id,
+                name=task.name,
                 status=task.status,
                 deadline=task.deadline
                          and task.deadline.strftime("%d/%m/%y %H:%M"))
@@ -44,6 +45,7 @@ def get_project(proj, with_tasks=True):
                  .order_by(Task.priority.desc()))
     else:
         query = []
-    return dict(name=proj.name,
+    return dict(pid=proj.id,
+                name=proj.name,
                 desc=proj.description,
                 tasks=[get_task(t) for t in query])

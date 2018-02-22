@@ -9,7 +9,7 @@ from datetime import datetime
 from flask import render_template, request
 from flask_login import login_user, logout_user, login_required, current_user
 
-from todoapp import app, db
+from todoapp import app, db, crypt
 from todoapp.data import Task, Project, User
 from todoapp.misc import PeeweeException, email_correct, get_task, get_project
 
@@ -44,10 +44,12 @@ def sign_up():
     if User.get_or_none(User.username == username or User.email == email):
         return 'exists'
 
+    p_h = crypt.generate_password_hash(password).decode('utf-8')
+
     with db.atomic() as tract:
         try:
             user = User.create(username=username,
-                               password_hash=password,
+                               password_hash=p_h,
                                email=email)
             if not user:
                 raise PeeweeException('failed to create user')
@@ -77,10 +79,10 @@ def sign_in():
         return 'short field'
 
     identity_check = User.email if email_correct(identity) else User.username
-    user = User.get_or_none(
-        identity_check == identity and User.password_hash == password)
+    user = User.get_or_none(identity_check == identity)
 
-    if user:
+    if user and crypt.check_password_hash(user.password_hash,
+                                          password.encode('utf-8')):
         login_user(user)
         return 'success'
 
@@ -379,7 +381,7 @@ def change_task_prio():
                      .select()
                      .where(Task.project == proj)
                      .order_by(Task.priority.desc()))
-            
+
             return dumps(dict(status='success',
                               tasks=[get_task(i) for i in query]))
 
