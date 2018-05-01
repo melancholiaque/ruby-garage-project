@@ -1,0 +1,35 @@
+.App {
+}
+
+.navbox {
+}
+
+.modal_button {
+}
+
+.input_form {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: solid 2px black;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.auth {
+}
+
+.proj_box {
+}
+
+.proj {
+}
+
+.task {
+}
