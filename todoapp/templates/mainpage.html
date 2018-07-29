@@ -1,0 +1,107 @@
+<html>
+  
+  <head>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>NO TITLE PROVIDED</title>
+    {% endif %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
+    
+    </head>
+    
+    <body>
+    <div id="authenticated_content" class="authenticated_content">
+
+      <div class="navbar">
+        <button onclick="input_dialog('input projname',create_project);" class="main_button">add project</button>
+        <button onclick="sign_out();" class="main_button">sign out</button>        
+      </div>
+      
+      <div class="popup_datetime animate" id="popup_datetime">
+	<input type="datetime-local" name="bdaytime" id="datetime" class="datetime_input">
+	<br>
+	<button type="button" id="datetime_submit" class="datetime_submit">submit</button>
+      </div>
+
+      <div class="popup_input animate" id="popup_input">
+	<div class="popup_input_title" id="popup_input_title"></div>
+	<input type="text" class="popup_input_text" id="popup_text">
+	<br>
+	<button type="button" id="popup_input_submit" class="popup_input_submit">
+	  submit
+	</button>
+	<button type="button" id="popup_input_cancel" class="popup_input_cancel">
+	  cancel
+	</button>	
+      </div>
+      
+      <div id="project_box">
+      </div>
+      
+    </div>
+    
+    <div id="anonymous_content" class="anonymous_content">
+
+      <div class="navbar">
+        <button onclick="show_signin()" class="main_button">
+	  sign in
+        </button>
+        <button onclick="show_signup()" class="main_button">
+	  sign up
+        </button>
+      </div>
+      
+      <div id="signup" class="hidden sign_up animate">
+	<div style="border-style:dotted;padding:0px;margin:20px;background-color:#358c50">
+	  <pre style="color:white;font-size:12px;">
+	    <b>
+_______ ____  _____   ____  _      _____  _____ _______
+|__   __/ __ \|  __ \ / __ \| |    |_   _|/ ____|__   __|
+| | | |  | | |  | | |  | | |      | | | (___    | |
+| | | |  | | |  | | |  | | |      | |  \___ \   | |
+| | | |__| | |__| | |__| | |____ _| |_ ____) |  | |
+ |_|  \____/|_____/ \____/|______|_____|_____/   |_| </b>
+for those who need plan A,B,C...
+	  </pre>
+	</div>
+	<form action="sign_up" method="post" onsubmit="return false;" id="signupform">
+	  <input type="text" pattern=".{5,64}" placeholder="username" name="username" class="sign_up_txt"><br>
+	  <input type="email" placeholder="email" name="email" class="sign_up_txt"><br>
+	  <input type="password" pattern=".{5,64}" placeholder="password" name="password" class="sign_up_txt"><br>
+	  <button onclick="sign_up_user();" class="logon_button"> submit </button>
+	  <button onclick="hide_signup();" class="logon_button cancel">
+	    cancel
+	  </button>
+	</form>
+      </div>
+      <div id="signin" class="hidden sign_in animate">
+	<div style="border-style:dotted;padding:0px;margin:20px;background-color:#358c50">
+	  <pre style="color:white;font-size:12px;">
+<b>_______ ____  _____   ____  _      _____  _____ _______
+|__   __/ __ \|  __ \ / __ \| |    |_   _|/ ____|__   __|
+| | | |  | | |  | | |  | | |      | | | (___    | |
+| | | |  | | |  | | |  | | |      | |  \___ \   | |
+| | | |__| | |__| | |__| | |____ _| |_ ____) |  | |
+ |_|  \____/|_____/ \____/|______|_____|_____/   |_| </b>
+for those who need plan A,B,C...
+	  </pre>
+	</div>
+	
+	<form action="sign_in" method="post" onsubmit="return false;" id="signinform" class="signinform">
+	  <input type="text" pattern=".{5,64}" placeholder="username/email" name="identity" class="sign_in_txt"><br>
+	  <input type="password" pattern=".{5,64}" placeholder="password" name="password" class="sign_in_txt"><br>
+	  <button onclick="sign_in_user();" class="logon_button"> submit </button>
+	  <button onclick="hide_signin();" class="logon_button cancel">
+	    cancel
+	  </button>
+	</form>
+      </div>
+    </div>
+  </body>
+</html>
